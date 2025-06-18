@@ -1,50 +1,115 @@
 "use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { loginSchema, type LoginFormData } from "@/schema/auth.schema";
+import api from "@/lib/api";
+import type { LoginRequest, LoginResponse } from "@/types/user";
+import { toast } from "sonner"; // or "react-hot-toast" if you use that
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    mode: "onBlur",
+  });
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+
+    try {
+      const requestData: LoginRequest = {
+        username: data.username,
+        password: data.password,
+      };
+
+      const response = await api.post<LoginResponse>("/auth/login", requestData);
+
+      if (response.data.token) {
+        localStorage.setItem("authToken", response.data.token);
+
+        toast.success("Login berhasil!", {
+          description: "Login berhasil! Selamat datang kembali",
+        });
+
+        reset();
+
+        setTimeout(() => {
+          window.location.href = "/dashboard";
+        }, 1000);
+      }
+    } catch (error: any) {
+
+      const errorMessage = "Username atau password salah";
+
+      toast.error(errorMessage, {
+        duration: 5000,
+        position: "top-right",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("grid gap-6", className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle>Login to your account</CardTitle>
-          <CardDescription>Enter your email below to login to your account</CardDescription>
+          <CardDescription>Enter your details below to login to your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-3">
-                <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="m@example.com" required />
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" placeholder="Enter your username" type="text" autoCapitalize="none" autoComplete="username" autoCorrect="off" disabled={isLoading} {...register("username")} />
+                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
               </div>
-              <div className="grid gap-3">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  <a href="#" className="ml-auto inline-block text-sm underline-offset-4 hover:underline">
-                    Forgot your password?
-                  </a>
+
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input id="password" placeholder="Enter your password" type={showPassword ? "text" : "password"} autoComplete="current-password" disabled={isLoading} className="pr-10" {...register("password")} />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={togglePasswordVisibility} disabled={isLoading}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    <span className="sr-only">{showPassword ? "Hide password" : "Show password"}</span>
+                  </Button>
                 </div>
-                <Input id="password" type="password" required />
+                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
               </div>
-              <div className="flex flex-col gap-3">
-                <Button type="submit" className="w-full">
-                  Login
-                </Button>
-                <Button variant="outline" className="w-full">
-                  Login with Google
-                </Button>
-              </div>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <a href="/register" className="underline underline-offset-4">
-                Sign up
-              </a>
+
+              <Button disabled={isLoading} type="submit">
+                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Login
+              </Button>
             </div>
           </form>
+
+          <div className="mt-4 text-center text-sm">
+            Don't have an account?{" "}
+            <a href="/register" className="underline underline-offset-4 hover:text-primary">
+              Sign up
+            </a>
+          </div>
         </CardContent>
       </Card>
     </div>

@@ -1,3 +1,4 @@
+// File: src/types/user.ts
 export type Role = "admin" | "User";
 
 export interface User {
@@ -8,6 +9,15 @@ export interface User {
   role: Role;
 }
 
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface LoginResponse {
+  token: string;
+}
+
 export interface RegisterRequest {
   username: string;
   password: string;
@@ -15,9 +25,9 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  "username": string;
-  "password": string;
-  "role": "User";
-  "createdAt": string;
-  "updatedAt": string;
+  username: string;
+  password: string;
+  role: "User";
+  createdAt: string;
+  updatedAt: string;
 }
