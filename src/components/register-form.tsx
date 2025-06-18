@@ -1,0 +1,156 @@
+"use client";
+
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { registerSchema, type RegisterFormData } from "@/schema/auth.schema";
+import api from "@/lib/api";
+import type { RegisterResponse } from "@/types/user";
+import { toast } from "sonner"; // or "react-hot-toast" if you use that library
+
+interface RegisterFormProps extends React.ComponentProps<"div"> {}
+
+export function RegisterForm({ className, ...props }: RegisterFormProps) {
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [submitMessage, setSubmitMessage] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
+    try {
+      const requestData = {
+        username: data.username,
+        password: data.password,
+        role: "User",
+      };
+
+
+      const response = await api.post<RegisterResponse>("/auth/register", requestData);
+
+      if (response.status === 201) {
+        toast.success("Registrasi berhasil!", {
+          description: "Anda akan diarahkan ke halaman login...",
+        });
+
+        reset();
+
+        setTimeout(() => {
+          window.location.href = "/login";
+        }, 2000);
+      } else {
+        toast.error("Registrasi gagal");
+      }
+    } catch (error: any) {
+      console.error("Registration error:", error);
+
+      const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat registrasi";
+
+      toast.error("Gagal registrasi", {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  return (
+    <div className={cn("flex flex-col gap-6", className)} {...props}>
+      <Card>
+        <CardHeader>
+          <CardTitle>Register</CardTitle>
+          <CardDescription>Enter your username below to create your account</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div className="flex flex-col gap-6">
+              {/* Username Field */}
+              <div className="grid gap-3">
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" type="text" placeholder="Enter your username" className={errors.username ? "border-red-500" : ""} {...register("username")} />
+                {errors.username && <p className="text-sm text-red-600">{errors.username.message}</p>}
+              </div>
+
+              {/* Password Field */}
+              <div className="grid gap-3">
+                <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Input id="password" type={showPassword ? "text" : "password"} className={errors.password ? "border-red-500 pr-10" : "pr-10"} {...register("password")} />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={togglePasswordVisibility}>
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.password && <p className="text-sm text-red-600">{errors.password.message}</p>}
+              </div>
+
+              {/* Confirm Password Field */}
+              <div className="grid gap-3">
+                <Label htmlFor="confirmPassword">Ulangi Password</Label>
+                <div className="relative">
+                  <Input id="confirmPassword" type={showConfirmPassword ? "text" : "password"} className={errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"} {...register("confirmPassword")} />
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={toggleConfirmPasswordVisibility}>
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </Button>
+                </div>
+                {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>}
+              </div>
+
+              {/* Submit Message */}
+              {submitMessage && (
+                <div className={cn("p-3 rounded-md text-sm", submitMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200")}>{submitMessage.message}</div>
+              )}
+
+              {/* Submit Button */}
+              <div className="flex flex-col gap-3">
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Registering...
+                    </>
+                  ) : (
+                    "Register"
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            <div className="mt-4 text-center text-sm">
+              Already have an account?{" "}
+              <a href="/login" className="underline underline-offset-4">
+                Sign in
+              </a>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

@@ -1,8 +1,9 @@
+// lib/api.ts
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://test-fe.mysellerpintar.com/api",
-  withCredentials: true, // kalau pakai cookie session
+  baseURL: "/api", // GANTI ini
+  withCredentials: false, // TRUE hanya jika API pakai cookie
 });
 
 export default api;
