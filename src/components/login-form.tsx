@@ -12,7 +12,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { loginSchema, type LoginFormData } from "@/schema/auth.schema";
 import api from "@/lib/api";
 import type { LoginRequest, LoginResponse } from "@/types/user";
-import { toast } from "sonner"; // or "react-hot-toast" if you use that
+import { toast } from "sonner"; 
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);

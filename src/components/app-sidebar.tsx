@@ -1,5 +1,9 @@
+// src/components/app-sidebar.tsx
+"use client";
+
 import * as React from "react";
 import { Home, Book } from "lucide-react";
+import { useRouter, usePathname } from "next/navigation";
 
 import { SearchForm } from "@/components/search-form";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@/components/ui/sidebar";
@@ -13,13 +17,14 @@ const data = {
         {
           icon: "lucide:home",
           title: "Articles",
-          url: "",
-          isActive: true,
+          url: "/admin/articles",
+          key: "articles",
         },
         {
           icon: "lucide:book",
-          title: "Category",
-          url: "#",
+          title: "Categories",
+          url: "/admin/category",
+          key: "categories",
         },
       ],
     },
@@ -31,26 +36,39 @@ const iconMap: Record<string, React.ElementType> = {
   "lucide:book": Book,
 };
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
+  activeSection?: string;
+}
+
+export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
+  const handleNavigation = (url: string) => {
+    router.push(url);
+  };
+
   return (
     <Sidebar {...props}>
       <SidebarHeader>
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
       </SidebarHeader>
       <SidebarContent>
-        {data.navMain.map((item, idx) => (
+        {data.navMain.map((group, idx) => (
           <SidebarGroup key={idx}>
             <SidebarGroupContent>
               <SidebarMenu>
-                {item.items.map((item) => {
+                {group.items.map((item) => {
                   const Icon = iconMap[item.icon];
+                  const isActive = pathname === item.url || activeSection === item.key;
+
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={item.isActive}>
-                        <a href={item.url} className="flex items-center gap-2">
+                      <SidebarMenuButton isActive={isActive} onClick={() => handleNavigation(item.url)} className="cursor-pointer">
+                        <div className="flex items-center gap-2">
                           {Icon && <Icon className="w-4 h-4" />}
                           {item.title}
-                        </a>
+                        </div>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
