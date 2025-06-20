@@ -19,19 +19,10 @@ export function VersionSwitcher({ versions, defaultVersion }: { versions: string
                 <GalleryVerticalEnd className="size-4" />
               </div>
               <div className="flex flex-col gap-0.5 leading-none">
-                <span className="font-medium">Documentation</span>
-                <span className="">v{selectedVersion}</span>
+                <span className="font-extrabold text-lg">Logoipsum</span>
               </div>
-              <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width)" align="start">
-            {versions.map((version) => (
-              <DropdownMenuItem key={version} onSelect={() => setSelectedVersion(version)}>
-                v{version} {version === selectedVersion && <Check className="ml-auto" />}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
         </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>

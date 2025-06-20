@@ -26,6 +26,7 @@ import { z } from "zod";
 import { getCategories } from "@/lib/category-api";
 import api from "@/lib/api";
 import { useParams } from "next/navigation";
+import { Editor } from "@tinymce/tinymce-react";
 
 const ArticleInputWithImage = ArticleInput.extend({
   image: z.any().optional(),
@@ -544,6 +545,7 @@ export default function EditArticlePage() {
                       )}
                     />
 
+                    {/* Content Field dengan TinyMCE */}
                     <FormField
                       control={form.control}
                       name="content"
@@ -551,9 +553,42 @@ export default function EditArticlePage() {
                         <FormItem>
                           <FormLabel>Konten Artikel *</FormLabel>
                           <FormControl>
-                            <Textarea placeholder="Tulis konten artikel di sini..." className="min-h-[200px] resize-none" {...field} disabled={loading} />
+                            <Editor
+                              apiKey="x1gjxqlg8mnu43nbkq1sroyifultqvt11tn6m2856a0ouvq2"
+                              value={field.value}
+                              onEditorChange={(content: string, editor: any) => field.onChange(content)}
+                              disabled={loading}
+                              init={
+                                {
+                                  height: 400,
+                                  menubar: false,
+                                  plugins: [
+                                    "advlist",
+                                    "autolink",
+                                    "lists",
+                                    "link",
+                                    "image",
+                                    "charmap",
+                                    "anchor",
+                                    "searchreplace",
+                                    "visualblocks",
+                                    "code",
+                                    "fullscreen",
+                                    "insertdatetime",
+                                    "media",
+                                    "table",
+                                    "preview",
+                                    "help",
+                                    "wordcount",
+                                  ] as string[],
+                                  toolbar: "undo redo | blocks | " + "bold italic forecolor | alignleft aligncenter " + "alignright alignjustify | bullist numlist outdent indent | " + "removeformat | help",
+                                  content_style: "body { font-family:Helvetica,Arial,sans-serif; font-size:14px }",
+                                  placeholder: "Tulis konten artikel di sini...",
+                                } as Record<string, unknown>
+                              }
+                            />
                           </FormControl>
-                          <FormDescription>Konten lengkap artikel yang akan dipublikasikan</FormDescription>
+                          <FormDescription>Konten lengkap artikel yang akan dipublikasikan (mendukung rich text formatting)</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}

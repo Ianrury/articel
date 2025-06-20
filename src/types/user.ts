@@ -22,13 +22,13 @@ export interface LoginResponse {
 export interface RegisterRequest {
   username: string;
   password: string;
-  role: "User";
+  role: string;
 }
 
 export interface RegisterResponse {
   username: string;
   password: string;
-  role: "User";
+  role: string;
   createdAt: string;
   updatedAt: string;
 }

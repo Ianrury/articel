@@ -1,4 +1,4 @@
-// src/app/categories/new/page.tsx
+// src/app/categories/edit/[id]/page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -12,14 +12,17 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, ArrowLeft, Check } from "lucide-react";
-import { createCategory, getCategoryErrorMessage } from "@/lib/category-api";
+import { updateCategory, getCategoryErrorMessage } from "@/lib/category-api";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { categorySchema, CategoryFormData } from "@/schema/category.schema";
+import { useParams } from "next/navigation";
 
-export default function CreateCategoryPage() {
+export default function EditCategoryPage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
   const [loading, setLoading] = useState(false);
 
   const form = useForm<CategoryFormData>({
@@ -29,18 +32,18 @@ export default function CreateCategoryPage() {
     },
   });
 
+  // Submit handler for updating category
   const onSubmit = async (data: CategoryFormData) => {
     try {
       setLoading(true);
 
-      const newCategory = await createCategory(data);
+      const updatedCategory = await updateCategory(id, data);
 
-      toast.success(`Category "${newCategory.name}" berhasil dibuat!`);
-      form.reset();
-      router.push("/admin/category/new");
+      toast.success(`Category "${updatedCategory.name}" berhasil diperbarui!`);
+      router.push("/admin/category");
       router.refresh();
     } catch (error) {
-      console.error("Error creating category:", error);
+      console.error("Error updating category:", error);
       const errorMessage = getCategoryErrorMessage(error);
       toast.error(errorMessage);
     } finally {
@@ -71,7 +74,7 @@ export default function CreateCategoryPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Tambah Category</BreadcrumbPage>
+                <BreadcrumbPage>Edit Category</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -82,8 +85,8 @@ export default function CreateCategoryPage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Tambah Category</h1>
-                <p className="text-muted-foreground">Buat category baru untuk mengorganisir artikel</p>
+                <h1 className="text-3xl font-bold tracking-tight">Edit Category</h1>
+                <p className="text-muted-foreground">Masukkan nama baru untuk category</p>
               </div>
               <Button variant="outline" size="sm" onClick={() => router.back()} className="flex items-center gap-2" disabled={loading}>
                 <ArrowLeft className="h-4 w-4" />
@@ -96,8 +99,8 @@ export default function CreateCategoryPage() {
           <div className="max-w-4xl">
             <Card>
               <CardHeader>
-                <CardTitle>Tambah Category</CardTitle>
-                <CardDescription>Isi form di bawah ini untuk membuat category baru</CardDescription>
+                <CardTitle>Update Category</CardTitle>
+                <CardDescription>Masukkan nama baru untuk category yang akan diperbarui</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
@@ -108,11 +111,11 @@ export default function CreateCategoryPage() {
                       name="name"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Nama Category *</FormLabel>
+                          <FormLabel>Nama Category Baru *</FormLabel>
                           <FormControl>
-                            <Input placeholder="Masukkan nama category..." {...field} disabled={loading} className="max-w-md" />
+                            <Input placeholder="Masukkan nama category baru..." {...field} disabled={loading} className="max-w-md" />
                           </FormControl>
-                          <FormDescription>Nama category yang akan digunakan untuk mengorganisir artikel (2-100 karakter)</FormDescription>
+                          <FormDescription>Nama baru category yang akan menggantikan nama sebelumnya (2-100 karakter)</FormDescription>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -120,16 +123,16 @@ export default function CreateCategoryPage() {
 
                     {/* Submit Buttons */}
                     <div className="flex items-center gap-4 pt-4">
-                      <Button type="submit" disabled={loading} className="flex items-center gap-2">
+                      <Button type="submit" disabled={loading || !form.formState.isValid} className="flex items-center gap-2">
                         {loading ? (
                           <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Menyimpan...
+                            Memperbarui...
                           </>
                         ) : (
                           <>
                             <Check className="h-4 w-4" />
-                            Simpan Category
+                            Perbarui Category
                           </>
                         )}
                       </Button>

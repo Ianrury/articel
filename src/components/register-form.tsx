@@ -8,11 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { registerSchema, type RegisterFormData } from "@/schema/auth.schema";
 import api from "@/lib/api";
 import type { RegisterResponse } from "@/types/user";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
 import Link from "next/link";
 
 interface RegisterFormProps extends React.ComponentProps<"div"> {}
@@ -21,20 +22,24 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [submitMessage, setSubmitMessage] = useState<{
-    type: "success" | "error";
-    message: string;
-  } | null>(null);
+  const [roleInput, setRoleInput] = useState<string>("");
 
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    setValue,
+    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
+    defaultValues: {
+      role: "User", // Default role
+    },
   });
+
+  const watchedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -42,10 +47,10 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
       const requestData = {
         username: data.username,
         password: data.password,
-        role: "User",
+        role: data.role,
       };
 
-
+      console.log("Registration data:", requestData);
       const response = await api.post<RegisterResponse>("/auth/register", requestData);
 
       if (response.status === 201) {
@@ -54,6 +59,7 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
         });
 
         reset();
+        setRoleInput("");
 
         setTimeout(() => {
           window.location.href = "/login";
@@ -82,12 +88,36 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
     setShowConfirmPassword(!showConfirmPassword);
   };
 
+  // Fungsi untuk kapitalisasi huruf pertama
+  const capitalizeFirstLetter = (str: string): string => {
+    if (!str) return str;
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  };
+
+  // Handle role input change dengan kapitalisasi
+  const handleRoleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const capitalizedValue = capitalizeFirstLetter(value);
+    setRoleInput(capitalizedValue);
+
+    // Set value di form jika sesuai dengan enum
+    if (capitalizedValue === "User" || capitalizedValue === "Admin") {
+      setValue("role", capitalizedValue as "User" | "Admin", { shouldValidate: true });
+    }
+  };
+
+  // Handle role select change
+  const handleRoleSelectChange = (value: "User" | "Admin") => {
+    setValue("role", value, { shouldValidate: true });
+    setRoleInput(value);
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
           <CardTitle>Register</CardTitle>
-          <CardDescription>Enter your username below to create your account</CardDescription>
+          <CardDescription>Enter your information below to create your account</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -123,11 +153,12 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
                 {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword.message}</p>}
               </div>
 
-              {/* Submit Message */}
-              {submitMessage && (
-                <div className={cn("p-3 rounded-md text-sm", submitMessage.type === "success" ? "bg-green-50 text-green-800 border border-green-200" : "bg-red-50 text-red-800 border border-red-200")}>{submitMessage.message}</div>
-              )}
-
+              {/* Role Field - Opsi 1: Input dengan kapitalisasi otomatis */}
+              <div className="grid gap-3">
+                <Label htmlFor="roleInput">Role (Input Manual)</Label>
+                <Input id="roleInput" type="text" placeholder="User atau Admin" value={roleInput} onChange={handleRoleInputChange} className={errors.role ? "border-red-500" : ""} />
+                {errors.role && <p className="text-sm text-red-600">{errors.role.message}</p>}
+              </div>
               {/* Submit Button */}
               <div className="flex flex-col gap-3">
                 <Button type="submit" className="w-full" disabled={isLoading}>
@@ -145,7 +176,9 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
 
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <Link href="/login" className="underline underline-offset-4 hover:text-primary">Sign Up</Link>
+              <Link href="/login" className="underline underline-offset-4 hover:text-primary">
+                Sign In
+              </Link>
             </div>
           </form>
         </CardContent>

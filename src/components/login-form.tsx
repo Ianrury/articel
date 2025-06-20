@@ -63,7 +63,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           if (response.data.role === "Admin") {
             window.location.href = "/admin/articles";
           } else {
-            window.location.href = "/user";
+            window.location.href = "/user/content";
           }
         }, 1000);
       }

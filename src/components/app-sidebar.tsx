@@ -16,7 +16,7 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
+  versions: [],
   navMain: [
     {
       items: [
@@ -67,11 +67,11 @@ export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader>
+      <SidebarHeader className="bg-[#2563ec]">
         <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="bg-[#2563ec]">
         {data.navMain.map((group, idx) => (
           <SidebarGroup key={idx}>
             <SidebarGroupContent>
@@ -82,7 +82,7 @@ export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
 
                   return (
                     <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton isActive={isActive} onClick={() => handleNavigation(item)} className="cursor-pointer">
+                      <SidebarMenuButton isActive={isActive} onClick={() => handleNavigation(item)} className="cursor-pointer hover:bg-blue-200 py-5">
                         <div className="flex items-center gap-2">
                           {Icon && <Icon className="w-4 h-4" />}
                           {item.title}

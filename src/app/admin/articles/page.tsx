@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Filter, ChevronLeft, ChevronRight, Loader2, Pencil, Trash, AlertTriangle } from "lucide-react";
+import { Search, Filter, ChevronLeft, ChevronRight, Loader2, Pencil, Trash, AlertTriangle, Eye } from "lucide-react";
 import { articlesApi, Article, Category, ArticlesResponse } from "@/lib/articles-api";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -308,8 +308,8 @@ export default function ArticlesPage() {
                         {/* Title */}
                         <td className="p-4">
                           <div className="max-w-md">
-                            <h3 className="font-medium text-gray-900 line-clamp-2">{article.title}</h3>
-                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{truncateContent(article.content, 100)}</p>
+                            <h3 className="font-medium text-gray-900 line-clamp-2">{truncateContent(article.title, 50)}</h3>
+                            <p className="text-sm text-gray-500 mt-1 line-clamp-2">{truncateContent(article.content, 50)}</p>
                           </div>
                         </td>
 
@@ -328,6 +328,12 @@ export default function ArticlesPage() {
                         {/* Action */}
                         <td className="p-4">
                           <div className="flex items-center gap-2">
+                            <Link href={`/admin/articles/show/${article.id}`}>
+                              <Button variant="outline" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                Show
+                              </Button>
+                            </Link>
                             <Link href={`/admin/articles/edit/${article.id}`}>
                               <Button variant="outline" size="sm">
                                 <Pencil className="h-4 w-4 mr-2" />
