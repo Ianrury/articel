@@ -6,10 +6,27 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LogOut, User } from "lucide-react";
+import { getUser, UserProfile } from "@/lib/user-api";
+import Link from "next/link";
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const router = useRouter();
+
+  const getuser = async () => {
+    try {
+      const data = await getUser();
+      setUser(data);
+      console.log("User:", data);
+    } catch (error) {
+      console.error("Failed to fetch user profile", error);
+    }
+  };
+
+  React.useEffect(() => {
+    getuser();
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem("authToken");
@@ -27,15 +44,17 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-white/20 px-6 py-4 shadow-sm">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
-          <h1 className="text-xl font-bold text-gray-800">User Portal</h1>
+          <Link href="/">
+            <h1 className="text-xl font-bold text-gray-800">User Portal</h1>
+          </Link>
 
           {/* User Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center space-x-2 focus:outline-none">
               <Avatar className="h-8 w-8 bg-gray-400">
-                <AvatarFallback className="text-white text-sm font-medium">J</AvatarFallback>
+                <AvatarFallback className="text-gray-400 text-sm font-medium">{user?.username?.[0]?.toUpperCase() || "?"}</AvatarFallback>
               </Avatar>
-              <span className="text-gray-600 font-medium">James Dean</span>
+              <span className="text-gray-700  border-b border-gray-400">{user?.username || "Loading..."}</span>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-48 bg-white border border-gray-200 shadow-lg rounded-lg" align="end">

@@ -3,15 +3,23 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, User, Tag, ArrowLeft, Clock } from "lucide-react";
+import { Calendar, User, Tag, ArrowLeft, Clock, Eye } from "lucide-react";
 import { toast } from "sonner";
-import { Article } from "@/lib/articles-api";
+import { Article, ArticlesResponse } from "@/lib/articles-api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const articlesApi = {
   getArticleById: async (id: string): Promise<Article> => {
     // Replace this with your actual API call
     const response = await fetch(`/api/articles/${id}`);
     if (!response.ok) throw new Error("Failed to fetch article");
+    return response.json();
+  },
+
+  getArticles: async (): Promise<ArticlesResponse> => {
+    const response = await fetch(`/api/articles`);
+    if (!response.ok) throw new Error("Failed to fetch articles");
     return response.json();
   },
 };
@@ -23,6 +31,12 @@ export default function DetailArticlePage() {
 
   const [article, setArticle] = useState<Article | null>(null);
   const [loading, setLoading] = useState(true);
+  const [allArticles, setAllArticles] = useState<Article[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const ITEMS_PER_PAGE = 3;
 
   const fetchArticle = async (articleId: string) => {
     try {
@@ -39,6 +53,48 @@ export default function DetailArticlePage() {
       setLoading(false);
     }
   };
+  const handleArticleClick = (id: string) => {
+    router.push(`/user/detail-article/${id}`);
+  };
+
+  const fetchAllArticles = async () => {
+    try {
+      setLoading(true);
+      const response: ArticlesResponse = await articlesApi.getArticles();
+      setAllArticles(response.data);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+      toast(
+        <div>
+          <div className="font-bold text-red-600">Error</div>
+          <div>Failed to fetch articles. Please try again.</div>
+        </div>
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  const filteredArticles = allArticles.filter((article) => {
+    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) || article.content.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || article.category.name === selectedCategory;
+
+    return matchesSearch && matchesCategory;
+  });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+  const currentArticles = filteredArticles.slice(startIndex, endIndex);
+
+  useEffect(() => {
+    fetchAllArticles();
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -98,6 +154,17 @@ export default function DetailArticlePage() {
     );
   }
 
+  function stripHtml(content: string): string {
+    if (!content) return "";
+    const text = content.replace(/<[^>]+>/g, "");
+    const textarea = typeof window !== "undefined" ? document.createElement("textarea") : null;
+    if (textarea) {
+      textarea.innerHTML = text;
+      return textarea.value;
+    }
+    return text;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Main Content */}
@@ -129,6 +196,60 @@ export default function DetailArticlePage() {
             ></div>
           </div>
         </article>
+      </div>
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {currentArticles.map((article) => (
+            <div key={article.id} className="bg-white rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden" onClick={() => handleArticleClick(article.id)}>
+              {/* Image Section */}
+              <div className="relative overflow-hidden">
+                <img src={article.imageUrl} alt={article.title} className="w-full h-40 object-cover group-hover:scale-105 transition-transform duration-300" />
+                <div className="absolute top-3 left-3">
+                  <Badge className="bg-black/70 text-white text-xs px-2 py-1 rounded-md">{article.category.name}</Badge>
+                </div>
+              </div>
+
+              {/* Content Section */}
+              <div className="p-4 space-y-3">
+                {/* Meta Information */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center space-x-3">
+                    <div className="flex items-center">
+                      <Calendar className="w-3 h-3 mr-1" />
+                      <span>{formatDate(article.createdAt)}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <User className="w-3 h-3 mr-1" />
+                      <span>{article.user.username}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-sm font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug m-0">{article.title}</h3>
+
+                {/* Content Preview */}
+                <p className="text-gray-600 text-sm leading-relaxed line-clamp-2">{stripHtml(article.content)}</p>
+
+                {/* Footer */}
+                <div className="flex items-center justify-between">
+                  <div className="flex gap-1">
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      Technology
+                    </Badge>
+                    <Badge variant="outline" className="text-xs px-2 py-1">
+                      Design
+                    </Badge>
+                  </div>
+                  <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700 p-0 h-auto">
+                    <Eye className="w-4 h-4 mr-1" />
+                    <span className="text-xs">Read More</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

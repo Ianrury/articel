@@ -249,7 +249,7 @@ export default function ArticlesPage() {
             <>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {currentArticles.map((article) => (
-                  <div key={article.id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden" onClick={() => handleArticleClick(article.id)}>
+                  <div key={article.id} className="bg-white rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer group overflow-hidden" onClick={() => handleArticleClick(article.id)}>
                     {/* Image Section */}
                     <div className="relative overflow-hidden">
                       <img src={article.imageUrl} alt={article.title} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
