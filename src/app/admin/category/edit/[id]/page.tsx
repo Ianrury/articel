@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Loader2, ArrowLeft, Check } from "lucide-react";
-import { updateCategory, getCategoryErrorMessage } from "@/lib/category-api";
+import { updateCategory, getCategoryErrorMessage, CategoryApiError } from "@/lib/category-api";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,7 +44,7 @@ export default function EditCategoryPage() {
       router.refresh();
     } catch (error) {
       console.error("Error updating category:", error);
-      const errorMessage = getCategoryErrorMessage(error);
+      const errorMessage = getCategoryErrorMessage(error as CategoryApiError);
       toast.error(errorMessage);
     } finally {
       setLoading(false);
