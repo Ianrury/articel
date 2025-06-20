@@ -8,13 +8,12 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent,  CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Calendar, User, Tag, Eye } from "lucide-react";
 import { articlesApi, Article } from "@/lib/articles-api";
 import { toast } from "sonner";
 import { useParams } from "next/navigation";
-import Image from "next/image";
 
 export default function ShowArticlePage() {
   const router = useRouter();

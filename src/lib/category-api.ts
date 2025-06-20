@@ -92,19 +92,18 @@ export async function deleteCategory(id: string): Promise<void> {
 
 // Helper functions for better error handling
 
-export function isCategoryNotFound(error: any): boolean {
-  return error?.response?.status === 404;
+export interface CategoryApiErrorResponse {
+  message?: string;
 }
 
-export function isUnauthorized(error: any): boolean {
-  return error?.response?.status === 401;
+export interface CategoryApiError {
+  response?: {
+    data?: CategoryApiErrorResponse;
+    status?: number;
+  };
 }
 
-export function isForbidden(error: any): boolean {
-  return error?.response?.status === 403;
-}
-
-export function getCategoryErrorMessage(error: any): string {
+export function getCategoryErrorMessage(error: CategoryApiError): string {
   if (error?.response?.data?.message) {
     return error.response.data.message;
   }
@@ -134,8 +133,5 @@ export const categoryApi = {
   create: createCategory,
   update: updateCategory,
   delete: deleteCategory,
-  isNotFound: isCategoryNotFound,
-  isUnauthorized,
-  isForbidden,
   getErrorMessage: getCategoryErrorMessage,
 };

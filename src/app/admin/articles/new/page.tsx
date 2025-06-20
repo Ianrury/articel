@@ -9,15 +9,13 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ArrowLeft, Upload, X, Image as ImageIcon, Camera, FileImage, Check, AlertCircle } from "lucide-react";
-import { articlesApi, Article, Category } from "@/lib/articles-api";
+import { articlesApi, Category } from "@/lib/articles-api";
 import { toast } from "sonner";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -166,11 +164,11 @@ export default function CreateArticlePage() {
       }, 1000);
 
       return response.data.url || response.data.imageUrl || response.data.data?.url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error);
       setUploadProgress(0);
       toast.error("Gagal mengupload gambar", {
-        description: error?.response?.data?.message || "Terjadi kesalahan saat mengupload gambar",
+        description:  "Terjadi kesalahan saat mengupload gambar",
       });
       throw error;
     } finally {
@@ -216,11 +214,11 @@ export default function CreateArticlePage() {
 
       form.reset();
       removeImage();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error creating article:", error);
 
       toast.error("Gagal membuat artikel", {
-        description: error?.response?.data?.message || "Terjadi kesalahan saat membuat artikel",
+        description: "Terjadi kesalahan saat membuat artikel",
       });
     } finally {
       setLoading(false);
@@ -371,7 +369,7 @@ export default function CreateArticlePage() {
                                     </div>
                                   )}
 
-                                  <Input id="image-upload" type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={loading || uploadingImage} />
+                                  <Input id="image-upload" type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={loading || uploadingImage} name={field.name} ref={field.ref}/>
                                 </div>
                               ) : (
                                 /* Image Preview */
@@ -493,7 +491,7 @@ export default function CreateArticlePage() {
                             <Editor
                               apiKey="x1gjxqlg8mnu43nbkq1sroyifultqvt11tn6m2856a0ouvq2"
                               value={field.value}
-                              onEditorChange={(content: string, editor: any) => field.onChange(content)}
+                              onEditorChange={(content: string) => field.onChange(content)}
                               disabled={loading}
                               init={{
                               height: 400,

@@ -9,8 +9,6 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -198,15 +196,17 @@ export default function EditArticlePage() {
       }, 1000);
 
       return response.data.url || response.data.imageUrl || response.data.data?.url;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error);
       setUploadProgress(0);
+
+      const errorMessage = "Terjadi kesalahan saat mengupload gambar";
+
       toast.error("Gagal mengupload gambar", {
-        description: error?.response?.data?.message || "Terjadi kesalahan saat mengupload gambar",
+        description: errorMessage,
       });
+
       throw error;
-    } finally {
-      setUploadingImage(false);
     }
   };
 
@@ -247,11 +247,11 @@ export default function EditArticlePage() {
       });
 
       router.push("/admin/articles");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error updating article:", error);
 
       toast.error("Gagal memperbarui artikel", {
-        description: error?.response?.data?.message || "Terjadi kesalahan saat memperbarui artikel",
+        description: "Terjadi kesalahan saat memperbarui artikel",
       });
     } finally {
       setLoading(false);
@@ -438,7 +438,7 @@ export default function EditArticlePage() {
                                     </div>
                                   )}
 
-                                  <Input id="image-upload" type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={loading || uploadingImage} />
+                                  <Input id="image-upload" type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={loading || uploadingImage} name={field.name} ref={field.ref} />
                                 </div>
                               ) : (
                                 <div className="space-y-4">
@@ -556,7 +556,7 @@ export default function EditArticlePage() {
                             <Editor
                               apiKey="x1gjxqlg8mnu43nbkq1sroyifultqvt11tn6m2856a0ouvq2"
                               value={field.value}
-                              onEditorChange={(content: string, editor: any) => field.onChange(content)}
+                              onEditorChange={(content: string) => field.onChange(content)}
                               disabled={loading}
                               init={
                                 {

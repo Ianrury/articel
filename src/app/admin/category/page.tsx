@@ -8,10 +8,9 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CategoriesResponse, getCategories, deleteCategory, Category, getCategoryErrorMessage } from "@/lib/category-api";
-import { MoreVertical, Edit2, Eye, Trash2, Plus, Search, Loader2, Pencil, Trash, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import { CategoriesResponse, getCategories, deleteCategory, Category, getCategoryErrorMessage, CategoryApiError } from "@/lib/category-api";
+import {  Plus, Search, Loader2, Pencil, Trash, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -98,7 +97,7 @@ export default function CategoriesPage() {
       }
     } catch (error) {
       console.error("Error deleting category:", error);
-      toast.error(getCategoryErrorMessage(error));
+      toast.error(getCategoryErrorMessage(error as CategoryApiError));
       setDeleteDialog((prev) => ({ ...prev, loading: false }));
     }
   };
