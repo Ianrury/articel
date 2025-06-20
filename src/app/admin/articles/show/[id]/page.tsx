@@ -28,7 +28,6 @@ export default function ShowArticlePage() {
     try {
       setLoading(true);
       const response = await articlesApi.getArticleById(articleId);
-      console.log(response);
       setArticle(response);
     } catch (error) {
       console.error("Error fetching article:", error);
