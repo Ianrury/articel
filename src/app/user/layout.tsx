@@ -58,10 +58,12 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
             </DropdownMenuTrigger>
 
             <DropdownMenuContent className="w-48 bg-white border border-gray-200 shadow-lg rounded-lg" align="end">
-              <DropdownMenuItem className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer">
-                <User className="h-4 w-4 text-gray-500" />
-                <span>My Account</span>
-              </DropdownMenuItem>
+              <Link href={`/user/detail-user/${user?.id || ""}`} passHref>
+                <DropdownMenuItem className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                  <User className="h-4 w-4 text-gray-500" />
+                  <span>My Account</span>
+                </DropdownMenuItem>
+              </Link>
 
               <DropdownMenuItem className="flex items-center space-x-2 px-3 py-2 hover:bg-gray-50 cursor-pointer text-red-600 hover:text-red-700" onClick={() => setShowLogoutDialog(true)}>
                 <LogOut className="h-4 w-4" />
