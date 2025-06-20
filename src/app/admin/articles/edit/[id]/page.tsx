@@ -1,4 +1,4 @@
-// src/app/articles/page.tsx
+// src/app/articles/[id]/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -25,23 +25,28 @@ import { ArticleInput } from "@/schema/articles.schema";
 import { z } from "zod";
 import { getCategories } from "@/lib/category-api";
 import api from "@/lib/api";
+import { useParams } from "next/navigation";
 
-// Extended schema to include image
 const ArticleInputWithImage = ArticleInput.extend({
   image: z.any().optional(),
 });
 
-export default function CreateArticlePage() {
+export default function EditArticlePage() {
   const router = useRouter();
+  const params = useParams();
+  const id = params.id as string;
+
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [articleLoading, setArticleLoading] = useState(true);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [currentArticle, setCurrentArticle] = useState<Article | null>(null);
 
   const form = useForm<z.infer<typeof ArticleInputWithImage>>({
     resolver: zodResolver(ArticleInputWithImage),
@@ -53,7 +58,6 @@ export default function CreateArticlePage() {
     },
   });
 
-  // Fetch categories on component mount
   const fetchCategories = async () => {
     try {
       setCategoriesLoading(true);
@@ -69,11 +73,45 @@ export default function CreateArticlePage() {
     }
   };
 
+  const fetchArticle = async (articleId: string) => {
+    try {
+      setArticleLoading(true);
+      const response = await articlesApi.getArticleById(articleId);
+      const article = response;
+
+      setCurrentArticle(article);
+
+      form.reset({
+        title: article.title || "",
+        content: article.content || "",
+        categoryId: article.categoryId || "",
+      });
+
+      if (article.imageUrl) {
+        setImagePreview(article.imageUrl);
+        setUploadedImageUrl(article.imageUrl);
+      }
+    } catch (error) {
+      console.error("Error fetching article:", error);
+      toast.error("Gagal memuat artikel", {
+        description: "Terjadi kesalahan saat memuat artikel",
+      });
+      router.push("/admin/articles");
+    } finally {
+      setArticleLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchArticle(id);
+    }
+  }, [id]);
+
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // Handle drag events
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -84,7 +122,6 @@ export default function CreateArticlePage() {
     }
   };
 
-  // Handle drop
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -103,9 +140,7 @@ export default function CreateArticlePage() {
     }
   };
 
-  // Process selected file
   const handleFile = (file: File) => {
-    // Validate file type
     if (!file.type.startsWith("image/")) {
       toast.error("File tidak valid", {
         description: "Hanya file gambar yang diperbolehkan (JPG, PNG, GIF, WebP)",
@@ -113,7 +148,6 @@ export default function CreateArticlePage() {
       return;
     }
 
-    // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("File terlalu besar", {
         description: "Ukuran file maksimal 5MB",
@@ -122,8 +156,8 @@ export default function CreateArticlePage() {
     }
 
     setImageFile(file);
+    setUploadedImageUrl(null);
 
-    // Create preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setImagePreview(e.target?.result as string);
@@ -131,7 +165,6 @@ export default function CreateArticlePage() {
     reader.readAsDataURL(file);
   };
 
-  // Upload image to server with progress
   const uploadImage = async (file: File): Promise<string> => {
     try {
       setUploadingImage(true);
@@ -140,7 +173,6 @@ export default function CreateArticlePage() {
       const formData = new FormData();
       formData.append("image", file);
 
-      // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress((prev) => {
           if (prev >= 90) {
@@ -194,7 +226,7 @@ export default function CreateArticlePage() {
 
       let imageUrl = uploadedImageUrl;
 
-      // Upload image if selected
+      // Upload gambar baru jika ada
       if (imageFile && !uploadedImageUrl) {
         imageUrl = await uploadImage(imageFile);
         setUploadedImageUrl(imageUrl);
@@ -207,19 +239,18 @@ export default function CreateArticlePage() {
         ...(imageUrl && { imageUrl }),
       };
 
-      await articlesApi.createArticle(articleData);
+      await articlesApi.updateArticle(id, articleData);
 
-      toast.success("Artikel berhasil dibuat!", {
-        description: "Artikel baru telah ditambahkan ke sistem",
+      toast.success("Artikel berhasil diperbarui!", {
+        description: "Perubahan artikel telah disimpan",
       });
 
-      form.reset();
-      removeImage();
+      router.push("/admin/articles");
     } catch (error: any) {
-      console.error("Error creating article:", error);
+      console.error("Error updating article:", error);
 
-      toast.error("Gagal membuat artikel", {
-        description: error?.response?.data?.message || "Terjadi kesalahan saat membuat artikel",
+      toast.error("Gagal memperbarui artikel", {
+        description: error?.response?.data?.message || "Terjadi kesalahan saat memperbarui artikel",
       });
     } finally {
       setLoading(false);
@@ -233,6 +264,42 @@ export default function CreateArticlePage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
+
+  if (articleLoading || categoriesLoading) {
+    return (
+      <SidebarProvider>
+        <AppSidebar activeSection="articles" />
+        <SidebarInset>
+          <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+            <SidebarTrigger className="-ml-1" />
+            <Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem className="hidden md:block">
+                  <BreadcrumbLink href="/">Content Management</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbLink href="/articles">Articles</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden md:block" />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>Edit Artikel</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </header>
+
+          <div className="flex flex-1 items-center justify-center">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-8 w-8 animate-spin" />
+              <span className="text-lg">Memuat artikel...</span>
+            </div>
+          </div>
+        </SidebarInset>
+      </SidebarProvider>
+    );
+  }
 
   return (
     <SidebarProvider>
@@ -252,7 +319,7 @@ export default function CreateArticlePage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Tambah Artikel</BreadcrumbPage>
+                <BreadcrumbPage>Edit Artikel</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -263,8 +330,10 @@ export default function CreateArticlePage() {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Tambah Artikel</h1>
-                <p className="text-muted-foreground">Buat artikel baru untuk dipublikasikan</p>
+                <h1 className="text-3xl font-bold tracking-tight">Edit Artikel</h1>
+                <p className="text-muted-foreground">
+                  Edit artikel: <span className="font-medium">{currentArticle?.title}</span>
+                </p>
               </div>
               <Button variant="outline" size="sm" onClick={() => router.back()} className="flex items-center gap-2">
                 <ArrowLeft className="h-4 w-4" />
@@ -278,12 +347,11 @@ export default function CreateArticlePage() {
             <Card>
               <CardHeader>
                 <CardTitle>Informasi Artikel</CardTitle>
-                <CardDescription>Isi form di bawah ini untuk membuat artikel baru</CardDescription>
+                <CardDescription>Edit informasi artikel di bawah ini</CardDescription>
               </CardHeader>
               <CardContent>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    {/* Title Field */}
                     <FormField
                       control={form.control}
                       name="title"
@@ -299,7 +367,6 @@ export default function CreateArticlePage() {
                       )}
                     />
 
-                    {/* Beautiful Image Upload Field */}
                     <FormField
                       control={form.control}
                       name="image"
@@ -373,7 +440,6 @@ export default function CreateArticlePage() {
                                   <Input id="image-upload" type="file" accept="image/*" onChange={handleImageSelect} className="hidden" disabled={loading || uploadingImage} />
                                 </div>
                               ) : (
-                                /* Image Preview */
                                 <div className="space-y-4">
                                   <div className="relative group">
                                     <div className="relative overflow-hidden rounded-xl border border-gray-200">
@@ -392,7 +458,6 @@ export default function CreateArticlePage() {
                                       </div>
                                     </div>
 
-                                    {/* Upload Success Badge */}
                                     {uploadedImageUrl && (
                                       <div className="absolute top-3 right-3">
                                         <Badge className="bg-green-500 hover:bg-green-500">
@@ -403,7 +468,6 @@ export default function CreateArticlePage() {
                                     )}
                                   </div>
 
-                                  {/* File Info */}
                                   <div className="bg-gray-50 rounded-lg p-4">
                                     <div className="flex items-start justify-between">
                                       <div className="flex items-center space-x-3">
@@ -411,8 +475,8 @@ export default function CreateArticlePage() {
                                           <FileImage className="h-5 w-5 text-blue-600" />
                                         </div>
                                         <div>
-                                          <p className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{imageFile?.name}</p>
-                                          <p className="text-xs text-gray-500">{imageFile && formatFileSize(imageFile.size)}</p>
+                                          <p className="font-medium text-gray-900 text-sm truncate max-w-[200px]">{imageFile?.name || "Gambar artikel"}</p>
+                                          <p className="text-xs text-gray-500">{imageFile ? formatFileSize(imageFile.size) : "Gambar dari server"}</p>
                                         </div>
                                       </div>
 
@@ -443,14 +507,13 @@ export default function CreateArticlePage() {
                       )}
                     />
 
-                    {/* Category Field */}
                     <FormField
                       control={form.control}
                       name="categoryId"
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Kategori *</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value} disabled={loading || categoriesLoading}>
+                          <Select onValueChange={field.onChange} value={field.value} disabled={loading || categoriesLoading}>
                             <FormControl>
                               <SelectTrigger>
                                 <SelectValue placeholder="Pilih kategori artikel" />
@@ -481,7 +544,6 @@ export default function CreateArticlePage() {
                       )}
                     />
 
-                    {/* Content Field */}
                     <FormField
                       control={form.control}
                       name="content"
@@ -501,19 +563,11 @@ export default function CreateArticlePage() {
                     <div className="flex items-center gap-4 pt-4">
                       <Button type="submit" disabled={loading || categoriesLoading || uploadingImage} className="flex items-center gap-2">
                         {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                        {loading ? "Menyimpan..." : "Simpan Artikel"}
+                        {loading ? "Memperbarui..." : "Perbarui Artikel"}
                       </Button>
 
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          form.reset();
-                          removeImage();
-                        }}
-                        disabled={loading}
-                      >
-                        Reset Form
+                      <Button type="button" variant="outline" onClick={() => router.push("/admin/articles")} disabled={loading}>
+                        Batal
                       </Button>
                     </div>
                   </form>

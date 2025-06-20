@@ -328,7 +328,7 @@ export default function ArticlesPage() {
                         {/* Action */}
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <Link href={`/admin/articles/${article.id}`}>
+                            <Link href={`/admin/articles/edit/${article.id}`}>
                               <Button variant="outline" size="sm">
                                 <Pencil className="h-4 w-4 mr-2" />
                                 Edit
