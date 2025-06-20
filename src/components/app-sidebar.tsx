@@ -3,9 +3,11 @@
 import * as React from "react";
 import { Home, Book, LogOut } from "lucide-react";
 import { useRouter, usePathname } from "next/navigation";
+import Link from "next/link";
 
-import { SearchForm } from "@/components/search-form";
-import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarRail } from "@/components/ui/sidebar";
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction } from "@/components/ui/alert-dialog";
+
+import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarRail } from "@/components/ui/sidebar";
 
 import { VersionSwitcher } from "./version-switcher";
 
@@ -50,54 +52,77 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
 export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
   const router = useRouter();
   const pathname = usePathname();
+  const [showLogoutDialog, setShowLogoutDialog] = React.useState(false);
 
   const handleNavigation = (item: (typeof data.navMain)[0]["items"][0]) => {
     if (item.key === "logout") {
-      localStorage.removeItem("authToken");
-      localStorage.removeItem("authRole");
-
-      document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-      document.cookie = "authRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
-
-      router.push("/login");
+      setShowLogoutDialog(true); // tampilkan dialog
     } else {
       router.push(item.url);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("authRole");
+
+    document.cookie = "authToken=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+    document.cookie = "authRole=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+
+    router.push("/login");
+  };
+
   return (
-    <Sidebar {...props}>
-      <SidebarHeader className="bg-[#2563ec]">
-        <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
-      </SidebarHeader>
+    <>
+      <Sidebar {...props}>
+        <SidebarHeader className="bg-[#2563ec]">
+          <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
+        </SidebarHeader>
 
-      <SidebarContent className="bg-[#2563ec]">
-        {data.navMain.map((group, idx) => (
-          <SidebarGroup key={idx}>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {group.items.map((item) => {
-                  const Icon = iconMap[item.icon];
-                  const isActive = pathname === item.url || activeSection === item.key;
+        <SidebarContent className="bg-[#2563ec]">
+          {data.navMain.map((group, idx) => (
+            <SidebarGroup key={idx}>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {group.items.map((item) => {
+                    const Icon = iconMap[item.icon];
+                    const isActive = pathname === item.url || activeSection === item.key;
 
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton isActive={isActive} onClick={() => handleNavigation(item)} className="cursor-pointer hover:bg-blue-200 py-5">
-                        <div className="flex items-center gap-2">
-                          {Icon && <Icon className="w-4 h-4" />}
-                          {item.title}
-                        </div>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton isActive={isActive} onClick={() => handleNavigation(item)} className="cursor-pointer hover:bg-blue-200 py-5">
+                          <div className="flex items-center gap-2">
+                            {Icon && <Icon className="w-4 h-4" />}
+                            {item.title}
+                          </div>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
+          ))}
+        </SidebarContent>
 
-      <SidebarRail />
-    </Sidebar>
+        <SidebarRail />
+      </Sidebar>
+
+      {/* Konfirmasi Logout */}
+      <AlertDialog open={showLogoutDialog} onOpenChange={setShowLogoutDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Konfirmasi Logout</AlertDialogTitle>
+            <AlertDialogDescription>Apakah Anda yakin ingin keluar dari aplikasi? Anda perlu login kembali untuk mengakses akun Anda.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Batal</AlertDialogCancel>
+            <AlertDialogAction onClick={handleLogout} className="bg-red-600 hover:bg-red-700">
+              Ya, Logout
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
