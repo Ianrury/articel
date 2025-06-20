@@ -12,7 +12,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { loginSchema, type LoginFormData } from "@/schema/auth.schema";
 import api from "@/lib/api";
 import type { LoginRequest, LoginResponse } from "@/types/user";
-import { toast } from "sonner"; 
+import { toast } from "sonner";
+import Link from "next/link";
 
 export function LoginForm({ className, ...props }: React.ComponentProps<"div">) {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,24 +44,31 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
       const response = await api.post<LoginResponse>("/auth/login", requestData);
 
-      if (response.data.token) {
+      if (response.data.token && response.data.role) {
+        // ✅ Simpan juga ke localStorage (optional untuk client-side logic)
         localStorage.setItem("authToken", response.data.token);
+        localStorage.setItem("authRole", response.data.role);
+
+        // ✅ Simpan ke cookie agar bisa diakses middleware
+        document.cookie = `authToken=${response.data.token}; path=/`;
+        document.cookie = `authRole=${response.data.role}; path=/`;
 
         toast.success("Login berhasil!", {
-          description: "Login berhasil! Selamat datang kembali",
+          description: "Selamat datang kembali",
         });
 
         reset();
 
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          if (response.data.role === "Admin") {
+            window.location.href = "/admin/articles";
+          } else {
+            window.location.href = "/user";
+          }
         }, 1000);
       }
     } catch (error: any) {
-
-      const errorMessage = "Username atau password salah";
-
-      toast.error(errorMessage, {
+      toast.error("Username atau password salah", {
         duration: 5000,
         position: "top-right",
       });
@@ -106,9 +114,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
 
           <div className="mt-4 text-center text-sm">
             Don't have an account?{" "}
-            <a href="/register" className="underline underline-offset-4 hover:text-primary">
+            <Link href="/register" className="underline underline-offset-4 hover:text-primary">
               Sign up
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

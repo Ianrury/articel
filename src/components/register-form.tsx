@@ -12,7 +12,8 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { registerSchema, type RegisterFormData } from "@/schema/auth.schema";
 import api from "@/lib/api";
 import type { RegisterResponse } from "@/types/user";
-import { toast } from "sonner"; // or "react-hot-toast" if you use that library
+import { toast } from "sonner"; 
+import Link from "next/link";
 
 interface RegisterFormProps extends React.ComponentProps<"div"> {}
 
@@ -144,9 +145,7 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
 
             <div className="mt-4 text-center text-sm">
               Already have an account?{" "}
-              <a href="/login" className="underline underline-offset-4">
-                Sign in
-              </a>
+              <Link href="/login" className="underline underline-offset-4 hover:text-primary">Sign Up</Link>
             </div>
           </form>
         </CardContent>

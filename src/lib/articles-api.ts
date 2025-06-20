@@ -20,12 +20,20 @@ export interface Article {
   id: string;
   title: string;
   content: string;
+  imageUrl: string;
   userId: string;
   categoryId: string;
   createdAt: string;
   updatedAt: string;
   category: Category;
   user: User;
+}
+
+// Interface untuk input artikel (hanya field yang diperlukan untuk create)
+export interface ArticleInput {
+  title: string;
+  content: string;
+  categoryId: string;
 }
 
 export interface ArticlesResponse {
@@ -43,16 +51,10 @@ export interface GetArticlesParams {
 }
 
 export const articlesApi = {
-  getArticles: async (params: GetArticlesParams = {}): Promise<ArticlesResponse> => {
+  getArticles: async (): Promise<ArticlesResponse> => {
     try {
-      const queryParams = new URLSearchParams();
-
-      if (params.page) queryParams.append("page", params.page.toString());
-      if (params.limit) queryParams.append("limit", params.limit.toString());
-      if (params.search) queryParams.append("search", params.search);
-      if (params.categoryId) queryParams.append("categoryId", params.categoryId);
-
-      const response = await api.get(`https://test-fe.mysellerpintar.com/api/articles?${queryParams.toString()}`);
+      const response = await api.get(`https://test-fe.mysellerpintar.com/api/articles`);
+      console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching articles:", error);
@@ -60,7 +62,6 @@ export const articlesApi = {
     }
   },
 
-  // Get single article by ID
   getArticleById: async (id: string): Promise<Article> => {
     try {
       const response = await api.get(`https://test-fe.mysellerpintar.com/api/articles/${id}`);
@@ -71,8 +72,7 @@ export const articlesApi = {
     }
   },
 
-  // Create new article
-  createArticle: async (articleData: Omit<Article, "id" | "createdAt" | "updatedAt" | "user" | "category">): Promise<Article> => {
+  createArticle: async (articleData: ArticleInput): Promise<Article> => {
     try {
       const response = await api.post("https://test-fe.mysellerpintar.com/api/articles", articleData);
       return response.data;
@@ -82,8 +82,7 @@ export const articlesApi = {
     }
   },
 
-  // Update article
-  updateArticle: async (id: string, articleData: Partial<Article>): Promise<Article> => {
+  updateArticle: async (id: string, articleData: Partial<ArticleInput>): Promise<Article> => {
     try {
       const response = await api.put(`https://test-fe.mysellerpintar.com/api/articles/${id}`, articleData);
       return response.data;
@@ -93,7 +92,6 @@ export const articlesApi = {
     }
   },
 
-  // Delete article
   deleteArticle: async (id: string): Promise<void> => {
     try {
       await api.delete(`https://test-fe.mysellerpintar.com/api/articles/${id}`);
@@ -103,7 +101,6 @@ export const articlesApi = {
     }
   },
 
-  // Get categories (assuming there's an endpoint for this)
   getCategories: async (): Promise<Category[]> => {
     try {
       const response = await api.get("https://test-fe.mysellerpintar.com/api/categories");
