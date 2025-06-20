@@ -1,13 +1,12 @@
 "use client";
 
 import * as React from "react";
-import {  GalleryVerticalEnd } from "lucide-react";
+import { GalleryVerticalEnd } from "lucide-react";
 
-import { DropdownMenu,  DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 
-export function VersionSwitcher({ versions, defaultVersion }: { versions: string[]; defaultVersion: string }) {
-
+export function VersionSwitcher() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>

@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { CategoriesResponse, getCategories, deleteCategory, Category, getCategoryErrorMessage, CategoryApiError } from "@/lib/category-api";
-import {  Plus, Search, Loader2, Pencil, Trash, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
+import { Plus, Search, Loader2, Pencil, Trash, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 10;
@@ -274,7 +274,9 @@ export default function CategoriesPage() {
                 <AlertTriangle className="h-5 w-5 text-red-500" />
                 Confirm Delete
               </DialogTitle>
-              <DialogDescription>Are you sure you want to delete the category "{deleteDialog.categoryName}"? This action cannot be undone.</DialogDescription>
+              <DialogDescription>
+                Are you sure you want to delete the category <strong>{deleteDialog.categoryName}</strong>? This action cannot be undone.
+              </DialogDescription>
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={cancelDelete} disabled={deleteDialog.loading}>

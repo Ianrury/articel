@@ -75,7 +75,7 @@ export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
     <>
       <Sidebar {...props}>
         <SidebarHeader className="bg-[#2563ec]">
-          <VersionSwitcher versions={data.versions} defaultVersion={data.versions[0]} />
+          <VersionSwitcher  />
         </SidebarHeader>
 
         <SidebarContent className="bg-[#2563ec]">

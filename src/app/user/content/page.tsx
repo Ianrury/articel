@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Article, articlesApi, ArticlesResponse } from "@/lib/articles-api";
 import { toast } from "sonner";
-import { Search, Filter, Calendar, User, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search,  Calendar, User, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -81,7 +81,6 @@ export default function ArticlesPage() {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    // Smooth scroll to top of articles section
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -89,7 +88,6 @@ export default function ArticlesPage() {
     const buttons = [];
     const maxVisiblePages = 5;
 
-    // Previous button
     buttons.push(
       <Button
         key="prev"
@@ -104,16 +102,13 @@ export default function ArticlesPage() {
       </Button>
     );
 
-    // Calculate visible page range
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-    // Adjust start if we're near the end
     if (endPage - startPage < maxVisiblePages - 1) {
       startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    // Add page numbers
     for (let i = startPage; i <= endPage; i++) {
       buttons.push(
         <Button

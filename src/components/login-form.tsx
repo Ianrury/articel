@@ -67,7 +67,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           }
         }, 1000);
       }
-    } catch (error: any) {
+    } catch {
       toast.error("Username atau password salah", {
         duration: 5000,
         position: "top-right",
@@ -113,7 +113,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<"div">) 
           </form>
 
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{" "}
+            Don t have an account?{" "}
             <Link href="/register" className="underline underline-offset-4 hover:text-primary">
               Sign up
             </Link>

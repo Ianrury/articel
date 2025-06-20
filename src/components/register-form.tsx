@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { registerSchema, type RegisterFormData } from "@/schema/auth.schema";
 import api from "@/lib/api";
@@ -16,9 +15,7 @@ import type { RegisterResponse } from "@/types/user";
 import { toast } from "sonner";
 import Link from "next/link";
 
-interface RegisterFormProps extends React.ComponentProps<"div"> {}
-
-export function RegisterForm({ className, ...props }: RegisterFormProps) {
+export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -30,7 +27,6 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
     formState: { errors },
     reset,
     setValue,
-    watch,
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     mode: "onBlur",
@@ -38,8 +34,6 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
       role: "User", // Default role
     },
   });
-
-  const watchedRole = watch("role");
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -67,10 +61,10 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
       } else {
         toast.error("Registrasi gagal");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Registration error:", error);
 
-      const errorMessage = error.response?.data?.message || error.message || "Terjadi kesalahan saat registrasi";
+      const errorMessage = "Terjadi kesalahan saat registrasi";
 
       toast.error("Gagal registrasi", {
         description: errorMessage,
@@ -104,12 +98,6 @@ export function RegisterForm({ className, ...props }: RegisterFormProps) {
     if (capitalizedValue === "User" || capitalizedValue === "Admin") {
       setValue("role", capitalizedValue as "User" | "Admin", { shouldValidate: true });
     }
-  };
-
-  // Handle role select change
-  const handleRoleSelectChange = (value: "User" | "Admin") => {
-    setValue("role", value, { shouldValidate: true });
-    setRoleInput(value);
   };
 
   return (

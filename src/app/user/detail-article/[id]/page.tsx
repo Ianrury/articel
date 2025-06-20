@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Calendar, User, Tag, ArrowLeft, Clock, Eye } from "lucide-react";
+import { Calendar, User,  ArrowLeft,  Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Article, ArticlesResponse } from "@/lib/articles-api";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +77,8 @@ export default function DetailArticlePage() {
 
   useEffect(() => {
     setCurrentPage(1);
+    setSearchTerm("");
+    setSelectedCategory("all");
   }, [searchTerm, selectedCategory]);
 
   const filteredArticles = allArticles.filter((article) => {
@@ -87,7 +89,6 @@ export default function DetailArticlePage() {
   });
 
   // Pagination calculations
-  const totalPages = Math.ceil(filteredArticles.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentArticles = filteredArticles.slice(startIndex, endIndex);
@@ -111,13 +112,6 @@ export default function DetailArticlePage() {
     });
   };
 
-  const formatTime = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString("id-ID", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
 
   if (loading) {
     return (

@@ -12,8 +12,8 @@ import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Search, Filter, ChevronLeft, ChevronRight, Loader2, Pencil, Trash, AlertTriangle, Eye, User, LogOut } from "lucide-react";
-import { articlesApi, Article, Category, ArticlesResponse } from "@/lib/articles-api";
+import { Search, ChevronLeft, ChevronRight, Loader2, Pencil, Trash, AlertTriangle, Eye, User, LogOut } from "lucide-react";
+import { articlesApi, Article, ArticlesResponse } from "@/lib/articles-api";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -42,7 +42,6 @@ export default function ArticlesPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [allArticles, setAllArticles] = useState<Article[]>([]); // Store all articles
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
@@ -99,17 +98,10 @@ export default function ArticlesPage() {
   };
 
   React.useEffect(() => {
+    setSelectedCategory("all");
     getuser();
   }, []);
 
-  const fetchCategories = async () => {
-    try {
-      const categoriesData = await articlesApi.getCategories();
-      setCategories(categoriesData);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
-    }
-  };
 
   // Handle delete article with confirmation
   const handleDeleteArticle = (articleId: string, articleTitle: string) => {
@@ -211,7 +203,6 @@ export default function ArticlesPage() {
   // Fetch data on component mount
   useEffect(() => {
     fetchAllArticles();
-    fetchCategories();
   }, []);
 
   const formatDate = (dateString: string) => {
@@ -455,7 +446,9 @@ export default function ArticlesPage() {
                   <AlertTriangle className="h-5 w-5 text-red-500" />
                   Confirm Delete
                 </DialogTitle>
-                <DialogDescription>Are you sure you want to delete the article "{deleteDialog.articleTitle}"? This action cannot be undone.</DialogDescription>
+                <DialogDescription>
+                  Are you sure you want to delete the article &quot;<strong>{deleteDialog.articleTitle}</strong>&quot;? This action cannot be undone.
+                </DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <Button variant="outline" onClick={cancelDelete} disabled={deleteDialog.loading}>
