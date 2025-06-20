@@ -18,7 +18,6 @@ export default function UserLayout({ children }: { children: React.ReactNode }) 
     try {
       const data = await getUser();
       setUser(data);
-      console.log("User:", data);
     } catch (error) {
       console.error("Failed to fetch user profile", error);
     }

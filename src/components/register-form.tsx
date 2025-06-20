@@ -44,7 +44,6 @@ export function RegisterForm({ className, ...props }: React.HTMLAttributes<HTMLD
         role: data.role,
       };
 
-      console.log("Registration data:", requestData);
       const response = await api.post<RegisterResponse>("/auth/register", requestData);
 
       if (response.status === 201) {

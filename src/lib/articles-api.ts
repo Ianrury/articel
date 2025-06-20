@@ -54,7 +54,6 @@ export const articlesApi = {
   getArticles: async (): Promise<ArticlesResponse> => {
     try {
       const response = await api.get(`https://test-fe.mysellerpintar.com/api/articles`);
-      console.log(response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching articles:", error);
