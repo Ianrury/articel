@@ -74,11 +74,11 @@ export function AppSidebar({ activeSection, ...props }: AppSidebarProps) {
   return (
     <>
       <Sidebar {...props}>
-        <SidebarHeader className="bg-[#2563ec]">
+        <SidebarHeader >
           <VersionSwitcher  />
         </SidebarHeader>
 
-        <SidebarContent className="bg-[#2563ec]">
+        <SidebarContent >
           {data.navMain.map((group, idx) => (
             <SidebarGroup key={idx}>
               <SidebarGroupContent>
